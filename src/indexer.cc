@@ -685,7 +685,11 @@ public:
 
 public:
   IndexDataConsumer(IndexParam &param) : param(param) {}
-  void initialize(ASTContext &Ctx) override { this->Ctx = param.Ctx = &Ctx; }
+  void initialize(ASTContext &Ctx) override {
+    this->Ctx = param.Ctx = &Ctx;
+    SourceManager &SM = Ctx.getSourceManager();
+    (void)param.ConsumeFile(*SM.getFileEntryForID(SM.getMainFileID()));
+  }
   bool handleDeclOccurence(const Decl *D, index::SymbolRoleSet Roles,
                            ArrayRef<index::SymbolRelation> Relations,
 #if LLVM_VERSION_MAJOR >= 7
