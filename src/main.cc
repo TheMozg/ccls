@@ -62,7 +62,10 @@ opt<std::string> opt_log_file("log-file", desc("log"), value_desc("filename"),
                               cat(C));
 opt<std::string> opt_log_file_append("log-file-append", desc("log"),
                                      value_desc("filename"), cat(C));
-
+opt<std::string> opt_path_client("client-root", desc("Path to workspace root on the client"), value_desc("path"),
+                           cat(C));
+opt<std::string> opt_path_server("server-root", desc("Path to project root on the remote server"), value_desc("path"),
+                             cat(C));
 void CloseLog() { fclose(ccls::log::file); }
 
 } // namespace
@@ -147,9 +150,9 @@ int main(int argc, char **argv) {
     } else {
       // The thread that reads from stdin and dispatchs commands to the main
       // thread.
-      pipeline::LaunchStdin();
+      pipeline::LaunchStdin(opt_path_client, opt_path_server);
       // The thread that writes responses from the main thread to stdout.
-      pipeline::LaunchStdout();
+      pipeline::LaunchStdout(opt_path_client, opt_path_server);
       // Main thread which also spawns indexer threads upon the "initialize"
       // request.
       pipeline::MainLoop();

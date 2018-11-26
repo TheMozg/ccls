@@ -26,6 +26,7 @@ limitations under the License.
 #include "platform.hh"
 #include "project.hh"
 #include "query_utils.hh"
+#include "utils.hh"
 #include "serializers/json.hh"
 
 #include <rapidjson/document.h>
@@ -420,8 +421,8 @@ void Main_OnIndexed(DB *db, WorkingFiles *wfiles, IndexUpdate *update) {
   }
 }
 
-void LaunchStdin() {
-  std::thread([]() {
+void LaunchStdin(std::string client_root, std::string server_root) {
+  std::thread([=]() {
     set_thread_name("stdin");
     std::string str;
     while (true) {
@@ -451,10 +452,21 @@ void LaunchStdin() {
         str[i] = c;
       }
 
-      auto message = std::make_unique<char[]>(len);
+      if (client_root != "" && server_root != "") {
+        std::string client_root_uri = client_root;
+        if (client_root_uri.find(":") == 1) {
+          std::string client_root_win = "/" + FindAndReplace(client_root_uri,":","%3A");
+          str = FindAndReplace(str,client_root_win,server_root);
+          client_root_uri = FindAndReplace(client_root_uri,"/","\\\\");
+        }
+        str = FindAndReplace(str,client_root_uri,server_root);
+      }
+
+      auto message = std::make_unique<char[]>(str.size());
+
       std::copy(str.begin(), str.end(), message.get());
       auto document = std::make_unique<rapidjson::Document>();
-      document->Parse(message.get(), len);
+      document->Parse(message.get(), str.size());
       assert(!document->HasParseError());
 
       JsonReader reader{document.get()};
@@ -476,13 +488,20 @@ void LaunchStdin() {
       .detach();
 }
 
-void LaunchStdout() {
+void LaunchStdout(std::string client_root, std::string server_root) {
   std::thread([=]() {
     set_thread_name("stdout");
 
+    std::string client_root_uri = client_root;
+    if (client_root_uri.find(":") == 1) {
+      client_root_uri = "/" + FindAndReplace(client_root_uri,":","%3A");
+    }
     while (true) {
       std::vector<std::string> messages = for_stdout->DequeueAll();
       for (auto &s : messages) {
+        if (client_root_uri != "" && server_root != "") {
+          s = FindAndReplace(s, server_root, client_root_uri);
+        }
         llvm::outs() << "Content-Length: " << s.size() << "\r\n\r\n" << s;
         llvm::outs().flush();
       }

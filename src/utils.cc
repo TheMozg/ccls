@@ -74,6 +74,20 @@ bool FindAnyPartial(const std::string &value,
                      });
 }
 
+std::string FindAndReplace(const std::string& str,
+                           const std::string& match,
+                           const std::string& replacement) {
+    size_t pos = 0;
+    std::string newstr = str;
+    while ((pos = newstr.find(match, pos)) != std::string::npos)
+    {
+         newstr.replace(pos, match.length(), replacement);
+         pos += replacement.length();
+    }
+    return newstr;
+}
+
+
 std::vector<std::string> SplitString(const std::string &str,
                                      const std::string &delimiter) {
   // http://stackoverflow.com/a/13172514

@@ -37,6 +37,10 @@ bool EndsWithAny(std::string_view s, const std::vector<std::string> &ss);
 bool FindAnyPartial(const std::string &value,
                     const std::vector<std::string> &values);
 
+std::string FindAndReplace(const std::string& str,
+                           const std::string& match,
+                           const std::string& replacement);
+
 std::vector<std::string> SplitString(const std::string &str,
                                      const std::string &delimiter);
 

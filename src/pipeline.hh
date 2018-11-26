@@ -39,8 +39,8 @@ namespace pipeline {
 extern std::atomic<int64_t> loaded_ts, pending_index_requests;
 extern int64_t tick;
 void Init();
-void LaunchStdin();
-void LaunchStdout();
+void LaunchStdin(std::string client_root, std::string server_root);
+void LaunchStdout(std::string client_root, std::string server_root);
 void Indexer_Main(CompletionManager *completion, VFS *vfs, Project *project,
                   WorkingFiles *wfiles);
 void MainLoop();
