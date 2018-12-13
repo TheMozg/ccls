@@ -39,6 +39,7 @@ using namespace llvm;
 
 #include <chrono>
 #include <mutex>
+#include <iostream>
 #include <shared_mutex>
 #include <thread>
 #ifndef _WIN32
@@ -455,11 +456,14 @@ void LaunchStdin(std::string client_root, std::string server_root) {
       if (client_root != "" && server_root != "") {
         std::string client_root_uri = client_root;
         if (client_root_uri.find(":") == 1) {
-          std::string client_root_win = "/" + FindAndReplace(client_root_uri,":","%3A");
-          str = FindAndReplace(str,client_root_win,server_root);
-          client_root_uri = FindAndReplace(client_root_uri,"/","\\\\");
+          std::string client_root_alt = FindAndReplace(client_root,"/","\\\\");
+          str = FindAndReplace(str,client_root_alt,server_root);
+          client_root_uri = "/" + FindAndReplace(client_root,":","%3A");
         }
+        str = FindAndReplace(str,client_root_uri+"/opt","/opt");
+        str = FindAndReplace(str,client_root_uri+"/usr","/usr");
         str = FindAndReplace(str,client_root_uri,server_root);
+        std::cerr << str << std::endl;
       }
 
       auto message = std::make_unique<char[]>(str.size());
@@ -500,7 +504,8 @@ void LaunchStdout(std::string client_root, std::string server_root) {
       std::vector<std::string> messages = for_stdout->DequeueAll();
       for (auto &s : messages) {
         if (client_root_uri != "" && server_root != "") {
-          s = FindAndReplace(s, server_root, client_root_uri);
+          s = FindAndReplace(s, "file://", "file://"+client_root_uri);
+          s = FindAndReplace(s, server_root, "");
         }
         llvm::outs() << "Content-Length: " << s.size() << "\r\n\r\n" << s;
         llvm::outs().flush();
