@@ -39,7 +39,6 @@ using namespace llvm;
 
 #include <chrono>
 #include <mutex>
-#include <iostream>
 #include <shared_mutex>
 #include <thread>
 #ifndef _WIN32
@@ -463,7 +462,6 @@ void LaunchStdin(std::string client_root, std::string server_root) {
         str = FindAndReplace(str,client_root_uri+"/opt","/opt");
         str = FindAndReplace(str,client_root_uri+"/usr","/usr");
         str = FindAndReplace(str,client_root_uri,server_root);
-        std::cerr << str << std::endl;
       }
 
       auto message = std::make_unique<char[]>(str.size());
